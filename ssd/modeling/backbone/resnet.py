@@ -113,7 +113,7 @@ class ResNet(nn.Module):
 
 
 @registry.BACKBONES.register('resnet18')
-def resnet18(cfg, pretrained=True):
+def ResNet18(cfg, pretrained=True):
     model = ResNet('resnet18')
     # if pretrained:
     #     unexpected = model.load_state_dict(load_state_dict_from_url(
@@ -123,7 +123,7 @@ def resnet18(cfg, pretrained=True):
 
 
 @registry.BACKBONES.register('resnet34')
-def resnet34(cfg, pretrained=True):
+def ResNet34(cfg, pretrained=True):
     model = ResNet('resnet34')
     # if pretrained:
     #     unexpected = model.load_state_dict(load_state_dict_from_url(
@@ -133,7 +133,7 @@ def resnet34(cfg, pretrained=True):
 
 
 @registry.BACKBONES.register('resnet50')
-def resnet50(cfg, pretrained=True):
+def ResNet50(cfg, pretrained=True):
     model = ResNet('resnet50')
     # if pretrained:
     #     unexpected = model.load_state_dict(load_state_dict_from_url(
@@ -143,7 +143,7 @@ def resnet50(cfg, pretrained=True):
 
 
 @registry.BACKBONES.register('resnet101')
-def resnet101(cfg, pretrained=True):
+def ResNet101(cfg, pretrained=True):
     model = ResNet('resnet101')
     # if pretrained:
     #     unexpected = model.load_state_dict(load_state_dict_from_url(
@@ -153,7 +153,7 @@ def resnet101(cfg, pretrained=True):
 
 
 @registry.BACKBONES.register('resnet152')
-def resnet152(cfg, pretrained=True):
+def ResNet152(cfg, pretrained=True):
     model = ResNet('resnet152')
     # if pretrained:
     #     unexpected = model.load_state_dict(load_state_dict_from_url(
