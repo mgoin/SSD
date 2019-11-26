@@ -2,6 +2,8 @@ import torch
 from torch import nn
 
 from ssd.layers import SeparableConv2d
+from ssd.modeling.anchors.prior_box import PriorBox
+from ssd.utils import box_utils
 from ssd.modeling import registry
 
 
@@ -11,6 +13,7 @@ class BoxPredictor(nn.Module):
         self.cfg = cfg
         self.cls_headers = nn.ModuleList()
         self.reg_headers = nn.ModuleList()
+        self.priors = None
         for level, (boxes_per_location, out_channels) in enumerate(zip(cfg.MODEL.PRIORS.BOXES_PER_LOCATION, cfg.MODEL.BACKBONE.OUT_CHANNELS)):
             self.cls_headers.append(self.cls_block(level, out_channels, boxes_per_location))
             self.reg_headers.append(self.reg_block(level, out_channels, boxes_per_location))
@@ -38,6 +41,15 @@ class BoxPredictor(nn.Module):
         batch_size = features[0].shape[0]
         cls_logits = torch.cat([c.view(c.shape[0], -1) for c in cls_logits], dim=1).view(batch_size, -1, self.cfg.MODEL.NUM_CLASSES)
         bbox_pred = torch.cat([l.view(l.shape[0], -1) for l in bbox_pred], dim=1).view(batch_size, -1, 4)
+
+        # For inference, generate default boxes 
+        if not self.training:
+            if self.priors is None:
+                self.priors = PriorBox(self.cfg)().to(bbox_pred.device)
+            boxes = box_utils.convert_locations_to_boxes(
+                bbox_pred, self.priors, self.cfg.MODEL.CENTER_VARIANCE, self.cfg.MODEL.SIZE_VARIANCE
+            )
+            bbox_pred = box_utils.center_form_to_corner_form(boxes)
 
         return cls_logits, bbox_pred
 

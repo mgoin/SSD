@@ -2,8 +2,6 @@ from torch import nn
 import torch.nn.functional as F
 
 from ssd.modeling import registry
-from ssd.modeling.anchors.prior_box import PriorBox
-from ssd.utils import box_utils
 from .inference import PostProcessor
 from .loss import MultiBoxLoss
 
@@ -15,7 +13,6 @@ class SSDBoxHead(nn.Module):
         self.cfg = cfg
         self.loss_evaluator = MultiBoxLoss(neg_pos_ratio=cfg.MODEL.NEG_POS_RATIO)
         self.post_processor = PostProcessor(cfg)
-        self.priors = None
 
     def forward(self, cls_logits, bbox_pred, targets=None):
         if self.training:
@@ -34,13 +31,7 @@ class SSDBoxHead(nn.Module):
         return detections, loss_dict
 
     def _forward_test(self, cls_logits, bbox_pred):
-        if self.priors is None:
-            self.priors = PriorBox(self.cfg)().to(bbox_pred.device)
         scores = F.softmax(cls_logits, dim=2)
-        boxes = box_utils.convert_locations_to_boxes(
-            bbox_pred, self.priors, self.cfg.MODEL.CENTER_VARIANCE, self.cfg.MODEL.SIZE_VARIANCE
-        )
-        boxes = box_utils.center_form_to_corner_form(boxes)
-        detections = (scores, boxes)
+        detections = (scores, bbox_pred)
         detections = self.post_processor(detections)
         return detections, {}
