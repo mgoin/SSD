@@ -4,7 +4,7 @@ import time
 
 import torch
 from PIL import Image
-from vizer.draw import draw_boxes
+# from vizer.draw import draw_boxes
 
 from ssd.config import cfg
 from ssd.data.datasets import COCODataset, VOCDataset
@@ -70,8 +70,8 @@ def run_demo(cfg, ckpt, score_threshold, images_dir, output_dir, dataset_type):
         )
         print('({:04d}/{:04d}) {}: {}'.format(i + 1, len(image_paths), image_name, meters))
 
-        drawn_image = draw_boxes(image, boxes, labels, scores, class_names).astype(np.uint8)
-        Image.fromarray(drawn_image).save(os.path.join(output_dir, image_name))
+        # drawn_image = draw_boxes(image, boxes, labels, scores, class_names).astype(np.uint8)
+        # Image.fromarray(drawn_image).save(os.path.join(output_dir, image_name))
 
 
 def main():

@@ -6,6 +6,29 @@ from torch.nn.parallel import DistributedDataParallel
 
 from ssd.utils.model_zoo import cache_url
 
+# This is needed for backwards compat with old weights because 
+# I removed box_predictor from box_head
+from collections import OrderedDict
+def _key_transformation(old_key):
+    split_key = old_key.split('.')
+    if split_key[0] == "box_head" and split_key[1] == "predictor":
+        return "box_predictor." + '.'.join(split_key[2:])
+    return old_key
+
+def _rename_state_dict_keys(old_state_dict, key_transformation):
+    """
+    def key_transformation(old_key):
+        if old_key == "layer.0.weight":
+            return "layer.1.weight"
+        return old_key
+    rename_state_dict_keys(state_dict_path, key_transformation)
+    """
+    new_state_dict = OrderedDict()
+    for key, value in old_state_dict.items():
+        new_key = key_transformation(key)
+        new_state_dict[new_key] = value
+    return new_state_dict
+
 
 class CheckPointer:
     _last_checkpoint_name = 'last_checkpoint.txt'
@@ -65,7 +88,9 @@ class CheckPointer:
         if isinstance(model, DistributedDataParallel):
             model = self.model.module
 
-        model.load_state_dict(checkpoint.pop("model"))
+        model_checkpoint = checkpoint.pop("model")
+        model_checkpoint = _rename_state_dict_keys(model_checkpoint, _key_transformation)
+        model.load_state_dict(model_checkpoint)
         if "optimizer" in checkpoint and self.optimizer:
             self.logger.info("Loading optimizer from {}".format(f))
             self.optimizer.load_state_dict(checkpoint.pop("optimizer"))

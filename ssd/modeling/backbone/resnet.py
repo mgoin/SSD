@@ -99,7 +99,6 @@ class ResNet(nn.Module):
                     nn.init.xavier_uniform_(param)
 
     def forward(self, x):
-        print("ResNet input:\n", x)
         x = self.feature_extractor(x)
 
         features = [x]
@@ -108,7 +107,6 @@ class ResNet(nn.Module):
             features.append(x)
 
         # Feature Map 38x38x4, 19x19x6, 10x10x6, 5x5x6, 3x3x4, 1x1x4
-        print("ResNet features:\n", tuple(features))
         return tuple(features)
 
 
