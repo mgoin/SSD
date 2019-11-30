@@ -38,11 +38,22 @@ class SSDDetector(nn.Module):
                 np.save("_model.output-1.npy", bboxes)
                 raise ValueError("aahahhhhh")
 
+        import time
+        start = time.time()
         features = self.backbone(images)
+        backbone_time = time.time() - start
+
+        start = time.time()
         cls_logits, bbox_pred = self.box_predictor(features)
+        box_predictor_time = time.time() - start
+
+        start = time.time()
         detections, detector_losses = self.box_head(cls_logits, bbox_pred, targets)
+        post_process_time = time.time() - start
         if self.training:
             return detector_losses
+        print("\tBackbone {:03d}ms | Box Predictor {:03d}ms | Post-Process {:03d}ms".format(
+            round(backbone_time * 1000), round(box_predictor_time * 1000), round(post_process_time * 1000)))
 
         # Export end-to-end inputs and outputs
         if self.cfg.EXPORT_POST_TENSORS:
